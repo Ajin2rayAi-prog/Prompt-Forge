@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt-Forge | آهنگری پرامپت</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="rtl">
+<div class="wrap">
+
+  <header>
+    <div class="logo" data-i="title">پرامپت‌فورج</div>
+    <div class="sub" data-i="sub">آهنگریِ پرامپت حرفه‌ای برای هوش مصنوعی</div>
+    <div class="topbar">
+      <button class="btn modebtn on" id="modeImg" data-i="modeImg">🖼 تصویر</button>
+      <button class="btn modebtn" id="modeVid" data-i="modeVid">🎬 ویدیو</button>
+      <button class="btn modebtn" id="modeFast" data-i="modeFast">⚡ سریع</button>
+      <button class="btn" id="btnLang">🇬🇧 English</button>
+      <button class="btn primary" id="btnSurprise" data-i="surprise">🎲 سورپرایزم کن!</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ LEFT: builders ============ -->
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab on" id="tabAnatomy" data-i="tabAnatomy">آناتومی پرامپت</button>
+        <button class="tab" id="tabShot" data-i="tabShot">دستورات شات</button>
+      </div>
+
+      <!-- anatomy -->
+      <div class="panel-b" id="pageAnatomy">
+        <div class="label" data-i="anatomyTitle">۹ تیکه‌ی پازل پرامپت (از کلی به جزئی)</div>
+        <div id="anatomyList"></div>
+      </div>
+
+      <!-- shot commands -->
+      <div class="panel-b" id="pageShot" style="display:none">
+        <div class="label" data-i="shotTitle">۹۹ دستور حرفه‌ای دوربین و افکت</div>
+        <div id="shotList"></div>
+      </div>
+    </section>
+
+    <!-- ============ RIGHT: output ============ -->
+    <aside class="sticky">
+      <div class="panel">
+        <div class="panel-h"><span data-i="preview">پیش‌نمایش زنده‌ی پرامپت</span></div>
+        <div class="panel-b">
+          <div class="out" id="outMain">...</div>
+
+          <div class="label" data-i="negative">پرامپت منفی (چیزهایی که نمی‌خوام)</div>
+          <div class="out neg" id="outNeg">...</div>
+
+          <div class="row">
+            <button class="btn primary" id="btnCopy" data-i="copy">📋 کپی</button>
+            <button class="btn" id="btnSave" data-i="save">💾 ذخیره</button>
+            <button class="btn danger" id="btnClear" data-i="clear">🗑 پاک‌کردن</button>
+          </div>
+
+          <div class="label" data-i="params">پارامترها</div>
+          <div class="prow">
+            <label data-i="steps">Steps</label>
+            <label data-i="cfg">CFG Scale</label>
+            <input id="pSteps" type="number" value="30" min="1" max="150">
+            <input id="pCfg" type="number" value="7" min="1" max="30" step="0.5">
+            <label data-i="sampler">Sampler</label>
+            <label data-i="ar">Aspect Ratio</label>
+            <select id="pSampler"></select>
+            <select id="pAr"></select>
+            <label data-i="seed">Seed</label>
+            <label></label>
+            <input id="pSeed" type="number" value="-1" min="-1">
+            <button class="btn small" id="btnSeed">🎲</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px">
+        <div class="panel-h"><span data-i="history">تاریخچه‌ی پرامپت‌ها</span>
+          <button class="btn small danger" id="btnHistClear" data-i="emptyHistory" style="margin-inline-start:auto">خالی‌کردن کل تاریخچه</button>
+        </div>
+        <div class="panel-b">
+          <div class="hist" id="histList"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer data-i="footer">ساخته‌شده با ❤ برای پرامپت‌نویسان</footer>
+</div>
+
+<div class="toast" id="toast">✅</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
