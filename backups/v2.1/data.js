@@ -298,10 +298,6 @@ const I18N = {
     switchLang:'🇬🇧 English',
     customPh:'یا خودت بنویس...',
     selected:'انتخاب‌شده‌ها',
-    trTitle:'🌐 بررسی ترجمه',
-    trHint:'هرچی فارسی نوشتی، به انگلیسی تبدیل میشه',
-    trEmpty:'متن فارسی‌ای ننوشتی. همه‌ی چیپ‌ها از قبل انگلیسی‌ان!',
-    trWait:'در حال ترجمه…',
   },
   en:{
     dir:'ltr', lang:'English',
@@ -325,66 +321,8 @@ const I18N = {
     switchLang:'🇮🇷 فارسی',
     customPh:'or type your own...',
     selected:'Selected',
-    trTitle:'🌐 Translation check',
-    trHint:'Your Persian text becomes English here',
-    trEmpty:'No Persian text — everything is already English!',
-    trWait:'translating…',
   }
 };
 
 const SAMPLERS = ['DPM++ 2M Karras','Euler a','DDIM','DPM++ SDE','UniPC','Heun'];
 const ASPECTS  = ['1:1','16:9','9:16','4:3','3:2','21:9'];
-
-/* ---- 5) Persian -> English prompt dictionary (offline) ---- */
-const FA_EN = {
-  /* subjects & nouns */
-  'شیر':'lion','اژدها':'dragon','گربه':'cat','سگ':'dog','اسب':'horse','جنگجو':'warrior',
-  'زن':'woman','مرد':'man','کودک':'child','دختر':'girl','پسر':'boy','شهر':'city',
-  'کوه':'mountain','دریا':'sea','جنگل':'forest','صحرا':'desert','قلعه':'castle','روستا':'village',
-  'ماهی':'fish','پرنده':'bird','گل':'flower','درخت':'tree','ماشین':'car','هواپیما':'airplane',
-  'قطار':'train','کشتی':'ship','قایق':'boat','خانه':'house','باغ':'garden','رودخانه':'river',
-  'آبشار':'waterfall','ساحل':'beach','جزیره':'island','آسمان':'sky','ابر':'cloud','خورشید':'sun',
-  'ماه':'moon','ستاره':'star','باران':'rain','برف':'snow','باد':'wind','آتش':'fire','دود':'smoke',
-  'جادوگر':'wizard','جادو':'magic','شاه':'king','ملکه':'queen','شاهزاده':'prince','فرشته':'angel',
-  'غول':'giant','قهرمان':'hero','شمشیر':'sword','سپر':'shield','زره':'armor','تاج':'crown',
-  'عصا':'staff','کمان':'bow','پیکان':'arrow','کلاه':'helmet','ردا':'cloak','شنل':'cape',
-  'ربات':'robot','سامورایی':'samurai','نینجا':'ninja','فضانورد':'astronaut','هواپیما':'airplane',
-  'تراکتور':'tractor','موتور':'motorcycle','دوچرخه':'bicycle','کامیون':'truck','اتوبوس':'bus',
-  'معبد':'temple','کلیسا':'church','مسجد':'mosque','برج':'tower','دیوار':'wall','پل':'bridge',
-  'خیابان':'street','جاده':'road','بازار':'market','کافه':'cafe','رستوران':'restaurant',
-  'کتاب':'book','نگارخانه':'gallery','آینه':'mirror','ساعت':'clock','گوی':'orb','چراغ':'lamp',
-  /* attributes */
-  'زیبا':'beautiful','بسیار':'very','خیلی':'very','بزرگ':'big','کوچک':'small','تاریک':'dark',
-  'روشن':'bright','سریع':'fast','کند':'slow','قدرتمند':'powerful','قوی':'strong','جوان':'young',
-  'پیر':'old','بلند':'tall','کوتاه':'short','پهن':'wide','باریک':'narrow','وسیع':'vast',
-  'عظیم':'massive','شگفت‌انگیز':'amazing','معمایی':'mysterious','ترسناک':'scary','خشن':'fierce',
-  'ملایم':'gentle','آرام':'calm','خشمگین':'angry','خوشحال':'happy','غمگین':'sad','تنها':'lonely',
-  'شجاع':'brave','باوفا':'loyal','دوست‌داشتنی':'lovely','باشکوه':'majestic','سلطنتی':'royal',
-  /* colors */
-  'سفید':'white','مشکی':'black','قرمز':'red','آبی':'blue','سبز':'green','زرد':'yellow',
-  'نارنجی':'orange','بنفش':'purple','صورتی':'pink','طلایی':'golden','نقره‌ای':'silver',
-  'خاکی':'earthy','فیروزه‌ای':'turquoise','ارغوانی':'magenta','کرم':'cream','طوسی':'gray',
-  'سرخابی':'fuchsia','یشمی':'jade','مرجانی':'coral','عنابی':'maroon','نفتی':'navy',
-  /* styles & mediums */
-  'نقاشی':'painting','عکس':'photo','آبرنگ':'watercolor','روغن':'oil','دیجیتال':'digital',
-  'انیمه':'anime','فانتزی':'fantasy','سایبرپانک':'cyberpunk','واقعی':'realistic','طبیعت':'nature',
-  'عاشقانه':'romantic','کلاسیک':'classic','مدرن':'modern','مینیمال':'minimal','گوتیک':'gothic',
-  'استیم':'steampunk','بازیگوش':'playful','حماسی':'epic','افسانه‌ای':'legendary','روایی':'mythical',
-  'تخیلی':'fiction','علمی':'science','فضایی':'space','زرشکی':'crimson','سپیدی':'pure',
-  /* lighting & atmosphere */
-  'نور':'light','سایه':'shadow','درخشش':'glow','روشنایی':'brightness','تاریکی':'darkness',
-  'مه':'fog','بارانی':'rainy','آفتابی':'sunny','ابری':'cloudy','طوفانی':'stormy','مه‌آلود':'misty',
-  /* quality */
-  'کیفیت':'quality','جزئیات':'details','وضوح':'clarity','دقیق':'detailed','شارپ':'sharp',
-  /* actions */
-  'دویدن':'running','راه رفتن':'walking','پرواز':'flying','نشسته':'sitting','ایستاده':'standing',
-  'لبخند':'smile','گریه':'crying','نگاه':'looking','خوابیده':'sleeping','جنگیدن':'fighting',
-  /* common words */
-  'یک':'a','با':'with','در':'in','روی':'on','زیر':'under','کنار':'near','بالای':'above',
-  'و':'and','داخل':'inside','خارج':'outside','وسط':'middle','انتها':'end','ابتدا':'start',
-  'داشته':'holding','برداشته':'carrying','پوشیده':'wearing','نشون':'showing',
-  /* compound helpers */
-  'نقاشی روغن':'oil painting','عکس واقعی':'realistic photo','کیفیت بالا':'high quality',
-  'خیلی بزرگ':'huge','خیلی کوچک':'tiny','دختر جوان':'young girl','پسر جوان':'young boy',
-  'نگاه کردن':'looking at','در حال':'in the middle of',
-};

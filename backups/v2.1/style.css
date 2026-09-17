@@ -120,17 +120,6 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px}
   color:var(--txt);border-radius:10px;padding:9px 11px;font-size:.85rem;font-family:inherit}
 .pgrid select:focus,.pgrid input:focus{outline:none;border-color:var(--acc2)}
 
-/* ---------- translate step ---------- */
-.trlist{display:flex;flex-direction:column;gap:8px;max-width:560px;margin:0 auto}
-.trrow{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);
-  border:1px solid var(--line);border-radius:12px;padding:11px 16px}
-.trfa{flex:1;font-size:.9rem;color:var(--txt);direction:rtl;text-align:start}
-.tren{flex:1;font-size:.86rem;font-family:Consolas,monospace;color:var(--acc2);direction:ltr;text-align:start}
-.trarrow{color:var(--mut2);font-size:1rem}
-.trwait{color:var(--warn);font-size:.8rem;font-family:inherit;animation:pulse 1.2s infinite}
-.trok{color:var(--acc2);font-size:.75rem}
-@keyframes pulse{50%{opacity:.4}}
-
 /* ---------- final screen ---------- */
 .final{display:flex;flex-direction:column;gap:14px}
 .box{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:14px;padding:14px 16px}

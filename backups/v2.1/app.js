@@ -22,7 +22,6 @@ function steps(){
   ANATOMY.forEach(sec => s.push({type:'anatomy', sec}));
   if (mode !== 'img') s.push({type:'shots'});
   s.push({type:'params'});
-  s.push({type:'translate'});
   s.push({type:'final'});
   return s;
 }
@@ -49,7 +48,6 @@ function render(){
   else if (st.type === 'anatomy') scr.innerHTML = viewAnatomy(st.sec);
   else if (st.type === 'shots')   scr.innerHTML = viewShots();
   else if (st.type === 'params')  scr.innerHTML = viewParams();
-  else if (st.type === 'translate') scr.innerHTML = viewTranslate();
   else                            scr.innerHTML = viewFinal();
 
   bind();
@@ -71,21 +69,12 @@ function viewMode(){
 function viewAnatomy(sec){
   const q = lang==='fa' ? sec.question.fa : sec.question.en;
   const h = lang==='fa' ? sec.hint.fa : sec.hint.en;
-  /* predefined chips */
   const chips = sec.chips.map(c=>{
     const on = chipOn(sec.id, c.en);
     const it = getSec(sec.id).find(x=>x.en===c.en);
     const w = it && it.w !== 1 ? `<span class="wtag">${it.w}×</span>` : '';
     return `<span class="chip ${on?'sel':''}" data-sec="${sec.id}" data-en="${esc(c.en)}"
       data-fa="${esc(c.fa)}">${lang==='fa'?esc(c.fa):esc(c.en)}${w}</span>`;
-  }).join('');
-  /* custom entries (typed by user) that are NOT predefined chips */
-  const known = new Set(sec.chips.map(c=>c.en));
-  const customs = getSec(sec.id).filter(x=>!known.has(x.en)).map(x=>{
-    const w = x.w !== 1 ? `<span class="wtag">${x.w}×</span>` : '';
-    const label = lang==='fa' ? (hasFa(x.fa) ? x.fa : x.en) : x.en;
-    return `<span class="chip sel" data-sec="${sec.id}" data-en="${esc(x.en)}"
-      data-fa="${esc(x.fa)}" data-custom="1">✎ ${esc(label)}${w}</span>`;
   }).join('');
   const cv = customTxt[sec.id] || '';
   const selCount = getSec(sec.id).length;
@@ -94,7 +83,6 @@ function viewAnatomy(sec){
       <div class="h">${h}${selCount?` · <b style="color:var(--acc2)">${selCount} ${t('selected')}</b>`:''}</div>
     </div>
     <div class="card-body">
-      ${customs ? `<div class="chips" style="margin-bottom:10px">${customs}</div>` : ''}
       <div class="chips" data-sec="${sec.id}">${chips}</div>
       <div class="inputwrap">
         <input class="ana-input" id="customIn" data-sec="${sec.id}" placeholder="${t('customPh')}" value="${esc(cv)}">
@@ -139,26 +127,6 @@ function viewParams(){
     <div class="card-body"><div class="pgrid">${fields}</div></div>`;
 }
 
-/* ---------- translate step: show fa -> en pairs ---------- */
-function viewTranslate(){
-  const all = ANATOMY.map(sec => ({ sec, items: getSec(sec.id) })).filter(x => x.items.length);
-  const rows = all.map(({sec, items}) => items.map(it => `
-    <div class="trrow">
-      <div class="trfa">${sec.icon} ${esc(it.fa)}</div>
-      <div class="trarrow">→</div>
-      <div class="tren">${hasFa(it.fa) ? (hasFa(it.en) ? `<span class="trwait">${t('trWait')}</span>` : esc(it.en)) : esc(it.en) + ' <span class="trok">✓</span>'}</div>
-    </div>`).join('')).join('');
-
-  return `<div class="card-head">
-      <div class="q">${t('trTitle')}</div>
-      <div class="h">${t('trHint')}</div>
-    </div>
-    <div class="card-body">
-      ${rows ? `<div class="trlist">${rows}</div>`
-             : `<div class="empty">${t('trEmpty')}</div>`}
-    </div>`;
-}
-
 function viewFinal(){
   const prompt = buildPrompt();
   const neg = buildNegative();
@@ -194,10 +162,8 @@ function viewFinal(){
    ============================================================ */
 function part(secId, weighted){
   const arr = getSec(secId);
-  const out = arr.map(x => {
-    const en = hasFa(x.en) ? (dictTranslate(x.en).en) : x.en;
-    return weighted && x.w !== 1 ? `(${en}:${x.w})` : en;
-  });
+  const out = arr.map(x => weighted && x.w !== 1 ? `(${x.en}:${x.w})` : x.en);
+  if (customTxt[secId]) out.push(customTxt[secId]);
   return out;
 }
 function cmds(){ return [...selCmds]; }
@@ -301,15 +267,11 @@ function bind(){
     render();
   }));
 
-  /* anatomy chips (predefined + custom) */
+  /* anatomy chips */
   $$('.chip[data-sec]').forEach(ch=>ch.addEventListener('click', ()=>{
-    const secId = ch.dataset.sec;
-    const arr = sel[secId] || (sel[secId] = []);
-    const key = ch.dataset.en;
-    const i = arr.findIndex(x => x.en === key || x.fa === key);
-    if (i >= 0) arr.splice(i,1); else arr.push({ en:key, fa:ch.dataset.fa, w:1 });
+    toggleChip(ch.dataset.sec, {en:ch.dataset.en, fa:ch.dataset.fa});
     render();
-    keepFocus(secId);
+    keepFocus(ch.dataset.sec);
   }));
 
   /* custom text */
@@ -353,83 +315,12 @@ function bind(){
   if (sp) sp.addEventListener('click', ()=>{ surprise(); render(); });
 }
 
-/* ============================================================
-   PERSIAN -> ENGLISH TRANSLATION
-   1) offline dictionary, 2) word-by-word, 3) free online API
-   ============================================================ */
-const hasFa = s => /[\u0600-\u06FF]/.test(s);
-
-function normalizeFa(s){
-  return s.replace(/\u0643/g,'\u06A9')   // ك -> ک
-          .replace(/\u0649/g,'\u06CC')   // ي -> ی
-          .replace(/[\u064B-\u0652\u0670\u0640]/g,'') // diacritics + tatweel
-          .replace(/\u200c/g,' ')        // ZWNJ -> space
-          .replace(/[.,!?؟،;:]+$/g,'')
-          .replace(/\s+/g,' ').trim();
-}
-
-/* try dictionary: exact phrase first, then word-by-word */
-function dictTranslate(text){
-  const s = normalizeFa(text);
-  if (!hasFa(s)) return { en: text, missed: 0 };
-  if (FA_EN[s]) return { en: FA_EN[s], missed: 0 };
-  const words = s.split(' ');
-  let missed = 0;
-  const out = words.map(w => {
-    if (FA_EN[w]) return FA_EN[w];
-    missed++;
-    return w;
-  });
-  return { en: out.join(' '), missed };
-}
-
-/* free online fallback (no key required) */
-async function onlineTranslate(text){
-  const q = encodeURIComponent(text);
-  const urls = [
-    'https://api.mymemory.translated.net/get?q=' + q + '&langpair=fa|en',
-    'https://translate-api.example.com/fa/en?q=' + q
-  ];
-  for (const u of urls){
-    try {
-      const ctrl = new AbortController();
-      const tid = setTimeout(()=>ctrl.abort(), 6000);
-      const r = await fetch(u, { signal: ctrl.signal });
-      clearTimeout(tid);
-      if (!r.ok) continue;
-      const d = await r.json();
-      const got = d.responseData?.translatedText || d.text || '';
-      if (got && !/Error|error/i.test(got) && got !== text) return got;
-    } catch(e){ /* try next */ }
-  }
-  return null;
-}
-
-/* translate a custom Persian entry; stores .en on the item */
-async function translateEntry(item){
-  if (!hasFa(item.fa)) { item.en = item.fa; return; }
-  const d = dictTranslate(item.fa);
-  item.en = d.en;
-  if (d.missed > 0){
-    const on = await onlineTranslate(item.fa);
-    if (on) item.en = on;
-  }
-}
-
-/* ============================================================
-   CUSTOM TEXT ENTRY (with translation)
-   ============================================================ */
 function addCustom(secId){
   const v = ($('#customIn')?.value || '').trim();
   if (!v) return;
   const arr = sel[secId] || (sel[secId] = []);
-  if (!arr.some(x => x.en === v || x.fa === v)){
-    const item = { en:v, fa:v, w:1 };
-    arr.push(item);
-    if (hasFa(v)) translateEntry(item).then(()=>render());  // async refresh
-  }
+  if (!arr.some(x => x.en === v)) arr.push({ en:v, fa:v, w:1 });
   render();
-  keepFocus(secId);
 }
 function keepFocus(secId){
   const inp = $('#customIn');
