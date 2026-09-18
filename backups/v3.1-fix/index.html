@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt-Forge | آهنگری پرامپت</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="rtl">
+<div class="app">
+
+  <!-- ===== top bar ===== -->
+  <header>
+    <div class="logo" data-i="title">پرامپت‌فورج</div>
+    <button class="btn ghost small" id="btnLang">🇬🇧 English</button>
+  </header>
+
+  <!-- ===== progress bar ===== -->
+  <div class="prog" id="prog">
+    <div class="prog-fill" id="progFill"></div>
+  </div>
+  <div class="prog-label" id="progLabel"></div>
+
+  <!-- ===== the single wizard screen ===== -->
+  <main class="card" id="screen">
+    <!-- filled by app.js -->
+  </main>
+
+  <!-- ===== nav buttons ===== -->
+  <nav class="nav">
+    <button class="btn" id="btnBack" data-i="back">→ قبلی</button>
+    <span id="navMid"></span>
+    <button class="btn primary" id="btnNext" data-i="next">بعدی ←</button>
+  </nav>
+
+  <footer data-i="footer">ساخته‌شده با ❤ برای پرامپت‌نویسان</footer>
+</div>
+
+<!-- ===== history drawer ===== -->
+<aside class="drawer" id="drawer">
+  <div class="drawer-h">
+    <span data-i="history">تاریخچه</span>
+    <button class="btn small" id="btnExport">⬆️ خروجی</button>
+    <button class="btn small" id="btnImport">⬇️ ورودی</button>
+    <button class="btn small danger" id="btnHistClear" data-i="emptyHistory">خالی‌کردن همه</button>
+    <button class="btn small" id="drawerClose">✕</button>
+  </div>
+  <div class="hist" id="histList"></div>
+</aside>
+
+<input type="file" id="importFile" accept=".json" style="display:none">
+
+<div class="toast" id="toast">✅</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

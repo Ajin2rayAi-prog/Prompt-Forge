@@ -85,9 +85,7 @@ function applyPreset(id){
     }
   });
   (p.cmds||[]).forEach(c=>selCmds.add(c));
-  /* land on the first anatomy step so the user sees & can tweak
-     what was auto-filled — not the final step */
-  stepIdx = 2;
+  stepIdx = steps().length - 1;   // jump to final
 }
 
 function viewMode(){
@@ -220,11 +218,7 @@ function viewFinal(){
         <div class="prompt" id="outNeg">${esc(neg)}</div>
       </div>
       <div class="btnrow">
-        <button class="btn primary" id="btnCopy">📋 ${t('copyBoth')}</button>
-        <button class="btn" id="btnCopyPromptOnly">${t('copyPromptOnly')}</button>
-        <button class="btn" id="btnCopyNegOnly">${t('copyNegOnly')}</button>
-      </div>
-      <div class="btnrow">
+        <button class="btn primary" id="btnCopy">📋 ${t('copy')}</button>
         <button class="btn" id="btnCopySum">${t('copySummary')}</button>
         <button class="btn" id="btnSave">${t('save')}</button>
       </div>
@@ -371,8 +365,7 @@ function bind(){
   $$('.preset').forEach(p=>p.addEventListener('click', ()=>{
     applyPreset(p.dataset.p);
     render();
-    // NOTE: no autoNext — user should review/edit the filled steps.
-    // Jumping straight to the final step was disorienting.
+    autoNext(650);
   }));
 
   /* anatomy chips (predefined cards + custom) */
@@ -418,20 +411,7 @@ function bind(){
   /* final actions */
   const cp = $('#btnCopy');
   if (cp) cp.addEventListener('click', async ()=>{
-    const prompt = $('#outPrompt').textContent;
-    const neg = $('#outNeg').textContent;
-    /* copy both blocks, clearly separated, so nothing is lost */
-    await copyText(`✅ Prompt:\n${prompt}\n\n🚫 Negative:\n${neg}`);
-    toast(t('copied'));
-  });
-  const cpg = $('#btnCopyPromptOnly');
-  if (cpg) cpg.addEventListener('click', async ()=>{
-    await copyText($('#outPrompt').textContent);
-    toast(t('copied'));
-  });
-  const cng = $('#btnCopyNegOnly');
-  if (cng) cng.addEventListener('click', async ()=>{
-    await copyText($('#outNeg').textContent);
+    await copyText($('#outPrompt').textContent + '\n' + $('#outNeg').textContent);
     toast(t('copied'));
   });
   const cs = $('#btnCopySum');
