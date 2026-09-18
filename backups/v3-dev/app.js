@@ -18,7 +18,7 @@ const selCmds = new Set();
 
 /* ---------- step plan ---------- */
 function steps(){
-  const s = [ {type:'mode'}, {type:'presets'} ];
+  const s = [ {type:'mode'} ];
   ANATOMY.forEach(sec => s.push({type:'anatomy', sec}));
   if (mode !== 'img') s.push({type:'shots'});
   s.push({type:'params'});
@@ -46,7 +46,6 @@ function render(){
   updateProg();
 
   if (st.type === 'mode')      scr.innerHTML = viewMode();
-  else if (st.type === 'presets') scr.innerHTML = viewPresets();
   else if (st.type === 'anatomy') scr.innerHTML = viewAnatomy(st.sec);
   else if (st.type === 'shots')   scr.innerHTML = viewShots();
   else if (st.type === 'params')  scr.innerHTML = viewParams();
@@ -55,37 +54,6 @@ function render(){
 
   bind();
   updateNav();
-}
-
-/* ---------- presets step: ready-made starting points ---------- */
-function viewPresets(){
-  const cards = PRESETS.map(p=>`
-    <div class="preset" data-p="${p.id}">
-      <div class="pic">${p.icon}</div>
-      <b>${lang==='fa'?p.fa:p.en}</b>
-      <span>${lang==='fa'?p.fa_desc:p.en}</span>
-    </div>`).join('');
-  return `<div class="card-head">
-      <div class="q">🗂 ${lang==='fa'?'یه نقطه‌ی شروعِ آماده؟':'A ready-made starting point?'}</div>
-      <div class="h">${lang==='fa'?'یه قالب رو انتخاب کن تا همه‌چیز پر بشه — بعد میتونی تغییرش بدی':'Pick a template to pre-fill everything — tweak it after'}</div>
-    </div>
-    <div class="card-body"><div class="modes">${cards}</div></div>`;
-}
-
-function applyPreset(id){
-  const p = PRESETS.find(x=>x.id===id);
-  if (!p) return;
-  restart();
-  mode = p.mode;
-  /* match each chip string to its anatomy section */
-  p.chips.forEach(en=>{
-    for (const sec of ANATOMY){
-      const c = sec.chips.find(x=>x.en === en);
-      if (c){ (sel[sec.id] ||= []).push({...c, w:1}); break; }
-    }
-  });
-  (p.cmds||[]).forEach(c=>selCmds.add(c));
-  stepIdx = steps().length - 1;   // jump to final
 }
 
 function viewMode(){
@@ -103,17 +71,13 @@ function viewMode(){
 function viewAnatomy(sec){
   const q = lang==='fa' ? sec.question.fa : sec.question.en;
   const h = lang==='fa' ? sec.hint.fa : sec.hint.en;
-  /* predefined chips: card with art preview + label + friendly description */
+  /* predefined chips */
   const chips = sec.chips.map(c=>{
     const on = chipOn(sec.id, c.en);
     const it = getSec(sec.id).find(x=>x.en===c.en);
     const w = it && it.w !== 1 ? `<span class="wtag">${it.w}×</span>` : '';
-    const desc = c.desc ? `<span class="cdesc">${esc(c.desc)}</span>` : '';
-    const art  = c.art  ? `<span class="art ${c.art}"><span></span><span></span></span>` : '';
-    return `<div class="chipcard ${on?'sel':''}" data-sec="${sec.id}" data-en="${esc(c.en)}"
-      data-fa="${esc(c.fa)}">${art}
-      <span class="clabel">${lang==='fa'?esc(c.fa):esc(c.en)}${w}</span>
-      ${desc}</div>`;
+    return `<span class="chip ${on?'sel':''}" data-sec="${sec.id}" data-en="${esc(c.en)}"
+      data-fa="${esc(c.fa)}">${lang==='fa'?esc(c.fa):esc(c.en)}${w}</span>`;
   }).join('');
   /* custom entries (typed by user) that are NOT predefined chips */
   const known = new Set(sec.chips.map(c=>c.en));
@@ -131,7 +95,7 @@ function viewAnatomy(sec){
     </div>
     <div class="card-body">
       ${customs ? `<div class="chips" style="margin-bottom:10px">${customs}</div>` : ''}
-      <div class="chipgrid" data-sec="${sec.id}">${chips}</div>
+      <div class="chips" data-sec="${sec.id}">${chips}</div>
       <div class="inputwrap">
         <input class="ana-input" id="customIn" data-sec="${sec.id}" placeholder="${t('customPh')}" value="${esc(cv)}">
         <button class="btn small" id="customAdd" data-sec="${sec.id}">＋</button>
@@ -178,13 +142,11 @@ function viewParams(){
 /* ---------- translate step: show fa -> en pairs ---------- */
 function viewTranslate(){
   const all = ANATOMY.map(sec => ({ sec, items: getSec(sec.id) })).filter(x => x.items.length);
-  const rows = all.map(({sec, items}) => items.map((it, idx)=>`
-    <div class="trrow" data-sec="${sec.id}" data-idx="${idx}">
+  const rows = all.map(({sec, items}) => items.map(it => `
+    <div class="trrow">
       <div class="trfa">${sec.icon} ${esc(it.fa)}</div>
       <div class="trarrow">→</div>
       <div class="tren">${hasFa(it.fa) ? (hasFa(it.en) ? `<span class="trwait">${t('trWait')}</span>` : esc(it.en)) : esc(it.en) + ' <span class="trok">✓</span>'}</div>
-      <input class="wsl" type="range" min="0.4" max="2.4" step="0.1" value="${it.w || 1}" title="weight">
-      <span class="wsv">${(it.w || 1).toFixed(1)}×</span>
     </div>`).join('')).join('');
 
   return `<div class="card-head">
@@ -201,8 +163,6 @@ function viewFinal(){
   const prompt = buildPrompt();
   const neg = buildNegative();
   const sum = persianSummary();
-  const tk = estTokens(prompt);
-  const tkN = estTokens(neg);
   return `<div class="card-head"><div class="q">${t('finalTitle')}</div></div>
     <div class="card-body"><div class="final">
       <div class="box">
@@ -210,11 +170,11 @@ function viewFinal(){
         <div class="summary">${sum}</div>
       </div>
       <div class="box">
-        <div class="lbl">📝 Prompt <span class="tok">≈ ${tk} توکن</span></div>
+        <div class="lbl">📝 Prompt</div>
         <div class="prompt" id="outPrompt">${esc(prompt)}</div>
       </div>
       <div class="box negbox">
-        <div class="lbl">🚫 ${t('negativeTitle')} <span class="tok">≈ ${tkN} توکن</span></div>
+        <div class="lbl">🚫 ${t('negativeTitle')}</div>
         <div class="prompt" id="outNeg">${esc(neg)}</div>
       </div>
       <div class="btnrow">
@@ -227,15 +187,6 @@ function viewFinal(){
         <button class="btn" id="btnSurprise2">🎲 ${t('surprise')}</button>
       </div>
     </div></div>`;
-}
-
-/* ============================================================
-   TOKEN COUNT (rough estimate: 1 token ~= 4 chars / 0.75 word)
-   ============================================================ */
-function estTokens(text){
-  if (!text) return 0;
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(words * 1.3));
 }
 
 /* ============================================================
@@ -361,15 +312,8 @@ function bind(){
     autoNext();
   }));
 
-  /* preset cards */
-  $$('.preset').forEach(p=>p.addEventListener('click', ()=>{
-    applyPreset(p.dataset.p);
-    render();
-    autoNext(650);
-  }));
-
-  /* anatomy chips (predefined cards + custom) */
-  $$('.chipcard[data-sec], .chip[data-sec]').forEach(ch=>ch.addEventListener('click', ()=>{
+  /* anatomy chips (predefined + custom) */
+  $$('.chip[data-sec]').forEach(ch=>ch.addEventListener('click', ()=>{
     const secId = ch.dataset.sec;
     const arr = sel[secId] || (sel[secId] = []);
     const key = ch.dataset.en;
@@ -391,17 +335,6 @@ function bind(){
 
   /* shot group tabs + commands */
   $$('.gtab').forEach(tb=>tb.addEventListener('click', ()=>{ activeGroup = +tb.dataset.g; render(); }));
-
-  /* weight sliders on translate step (live, no re-render to keep focus) */
-  $$('.wsl').forEach(sl=>sl.addEventListener('input', ()=>{
-    const secId = sl.closest('.trrow').dataset.sec;
-    const idx = +sl.closest('.trrow').dataset.idx;
-    const it = sel[secId] && sel[secId][idx];
-    if (it){
-      it.w = parseFloat(sl.value);
-      sl.parentElement.querySelector('.wsv').textContent = it.w.toFixed(1) + '×';
-    }
-  }));
   $$('.cmd').forEach(c=>c.addEventListener('click', ()=>{
     const k = c.dataset.c;
     selCmds.has(k) ? selCmds.delete(k) : selCmds.add(k);
@@ -606,33 +539,6 @@ function applyLang(){
   render();
 }
 $('#btnHistClear').addEventListener('click', ()=>{ saveHist([]); renderHist(); toast('🗑'); });
-
-/* ---------- export / import history ---------- */
-$('#btnExport').addEventListener('click', ()=>{
-  const h = loadHist();
-  if (!h.length){ toast(lang==='fa'?'تاریخچه خالیه!':'History is empty!'); return; }
-  const blob = new Blob([JSON.stringify(h, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `promptforge-history-${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(a.href);
-  toast('⬆️');
-});
-$('#btnImport').addEventListener('click', ()=>$('#importFile').click());
-$('#importFile').addEventListener('change', e=>{
-  const f = e.target.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = ()=>{
-    try{
-      const d = JSON.parse(r.result);
-      if (!Array.isArray(d)) throw 0;
-      const merged = [...d, ...loadHist()].slice(0,50);
-      saveHist(merged); renderHist(); toast('⬇️');
-    }catch(_){ toast('❌'); }
-  };
-  r.readAsText(f);
-  e.target.value = '';
-});
 
 /* history drawer toggle */
 let drawerOpen = false;
